@@ -61,34 +61,19 @@ void Hero::Movement( HWND hWnd )
 class Enemy :public Entity
 {
 	public:
-	void init( float x, float y );
-	void move( );
-	void tracemove( float x, float y );
+	void tracemove( const Hero & h );
 
 	public:
-	Enemy( ) :Entity( 0.0f, 0.0f )
+	Enemy( float x, float y ) :Entity( x, y )
 	{
 
 	}
 };
 
-void Enemy::init( float x, float y )
+void Enemy::tracemove( const Hero & h )
 {
-	x_pos = x;
-	y_pos = y;
-}
-
-
-void Enemy::move( )
-{
-	y_pos += 2;
-
-}
-
-void Enemy::tracemove( float x, float y )
-{
-	float dx = (x - this->x_pos) / 20;
-	float dy = (y - this->y_pos) / 20;
+	float dx = (h.x_pos - this->x_pos) / 20;
+	float dy = (h.y_pos - this->y_pos) / 20;
 
 	if ( dx <= 10.0f )
 		dx *= 2.0f;
@@ -101,13 +86,8 @@ void Enemy::tracemove( float x, float y )
 }
 
 
-
-
-
-// ÃÑ¾Ë Å¬·¡½º 
 class Bullet :public Entity
 {
-
 	public:
 	bool bShow;
 	int bLife;
@@ -119,7 +99,7 @@ class Bullet :public Entity
 	bool check_collision( const Enemy& e );
 
 	public:
-	Bullet( float x, float y, int life ) : Entity( x, y )
+	Bullet( const Hero& h, int life ) : Entity( h.x_pos, h.y_pos )
 	{
 		this->active( );
 		bLife = life;

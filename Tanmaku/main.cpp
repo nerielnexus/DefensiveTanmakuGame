@@ -4,12 +4,9 @@
 // the WindowProc function prototype
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-//°´Ã¼ »ý¼º 
-Hero hero(100.0f,100.0f);
-Enemy enemy[ENEMY_NUM];
-
 std::vector<Enemy> vEnemys;
 std::vector<Bullet> vBullets;
+Hero* hero;
 
 
 
@@ -53,6 +50,14 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	while (TRUE)
 	{
 		DWORD starting_point = GetTickCount();
+
+		for ( int i = 0; i < ENEMY_NUM; i++ )
+		{
+			if ( i % 2 == 0 )
+				continue;
+
+			vEnemys.push_back( Enemy( rand( ) % 400, rand( ) % 450 ) );
+		}
 
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
@@ -198,34 +203,24 @@ void initD3D(HWND hWnd)
 
 void init_game(void)
 {
-	// Initiate enemy
-	for (int i = 0; i<ENEMY_NUM; i++)
-	{
-		enemy[i].init((float)(rand() % 400), rand() % 400);
-	}
+	hero = new Hero( 100.0f, 150.0f );
+
+	for ( int i = 0; i < ENEMY_NUM; i++ )
+		vEnemys.push_back( Enemy( rand( ) % 400, rand( ) % 450 ) );
 }
 
 
 void do_game_logic(HWND hWnd)
 {
 
-	hero.Movement(hWnd);
+	hero->Movement(hWnd);
 
-
-	// Enemy movement
-	for (int i = 0; i<ENEMY_NUM; i++)
-	{
-		if ( enemy[ i ].y_pos > 500 )
-		{
-			enemy[ i ].init( ( float ) (rand( ) % 400), rand( ) % 400 );
-		}
-		else
-			enemy[ i ].tracemove( hero.x_pos, hero.y_pos );
-	}
+	for ( std::vector<Enemy>::iterator eit = vEnemys.begin( ); eit != vEnemys.end( ); eit++ )
+		eit->tracemove( *hero );
 
 	if ( KEY_DOWN( VK_LBUTTON ) )
 	{
-		vBullets.push_back( Bullet( hero.x_pos, hero.y_pos, 1000 ) );
+		vBullets.push_back( Bullet( *hero, 1000 ) );
 	}
 
 	for ( std::vector<Bullet>::iterator it = vBullets.begin( ); it != vBullets.end( ); it++)
@@ -236,16 +231,18 @@ void do_game_logic(HWND hWnd)
 		if ( it->bLife < 0 )
 			it->hide( );
 		else
-			for ( int i = 0; i < ENEMY_NUM; i++ )
+		{
+			for ( std::vector<Enemy>::iterator eit = vEnemys.begin( ); eit != vEnemys.end( ); )
 			{
-				if ( it->check_collision( enemy[i] ) == true )
-				{
-					enemy[ i ].init( ( float ) (rand( ) % 300), rand( ) % 200 - 300 );
-					//it->hide( );
-				}
+				if ( it->check_collision( *eit ) )
+					eit = vEnemys.erase( eit );
 				else
+				{
 					it->bLife--;
+					++eit;
+				}
 			}
+		}
 	}
 
 	std::vector<Bullet>::iterator it_delete = vBullets.begin( );
@@ -292,7 +289,7 @@ void render_frame(void)
 	RECT part;
 	SetRect(&part, 0, 0, 64, 64);
 	D3DXVECTOR3 center(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
-	D3DXVECTOR3 position(hero.x_pos, hero.y_pos, 0.0f);    // position at 50, 50 with no depth
+	D3DXVECTOR3 position(hero->x_pos, hero->y_pos, 0.0f);    // position at 50, 50 with no depth
 	d3dspt->Draw(sprite_hero, &part, &center, &position, D3DCOLOR_ARGB(255, 255, 255, 255));
 
 
@@ -308,16 +305,13 @@ void render_frame(void)
 		}
 	}
 
-	// Enemy
-	RECT part2;
-	SetRect(&part2, 0, 0, 64, 64);
-	D3DXVECTOR3 center2(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
-
-	for (int i = 0; i<ENEMY_NUM; i++)
+	for ( std::vector<Enemy>::iterator eit = vEnemys.begin( ); eit != vEnemys.end( ); eit++ )
 	{
-
-		D3DXVECTOR3 position2(enemy[i].x_pos, enemy[i].y_pos, 0.0f);    // position at 50, 50 with no depth
-		d3dspt->Draw(sprite_enemy, &part2, &center2, &position2, D3DCOLOR_ARGB(255, 255, 255, 255));
+		RECT part2;
+		SetRect( &part2, 0, 0, 64, 64 );
+		D3DXVECTOR3 center2( 0.0f, 0.0f, 0.0f );    // center at the upper-left corner
+		D3DXVECTOR3 position2( eit->x_pos, eit->y_pos, 0.0f );    // position at 50, 50 with no depth
+		d3dspt->Draw( sprite_enemy, &part2, &center2, &position2, D3DCOLOR_ARGB( 255, 255, 255, 255 ) );
 	}
 
 
