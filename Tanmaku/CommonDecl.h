@@ -7,16 +7,18 @@
 #include <iostream>
 #include <vector>
 #include <ctime>
+#include <random>
 
 #pragma comment (lib, "d3d9.lib")
 #pragma comment (lib, "d3dx9.lib")
 
-#define SCREEN_WIDTH  1280
-#define SCREEN_HEIGHT 960
 #define KEY_DOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
 #define KEY_UP(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 0 : 1)
 
-#define ENEMY_NUM 30
+#define SCREEN_WIDTH    1280
+#define SCREEN_HEIGHT   960
+#define ENEMY_NUM       30
+#define BULLET_LIFE     10000
 
 enum { MOVE_UP, MOVE_DOWN, MOVE_LEFT, MOVE_RIGHT };
 

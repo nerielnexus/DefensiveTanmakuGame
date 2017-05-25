@@ -51,13 +51,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	{
 		DWORD starting_point = GetTickCount();
 
-		for ( int i = 0; i < ENEMY_NUM; i++ )
-		{
-			if ( i % 2 == 0 )
-				continue;
 
-			vEnemys.push_back( Enemy( rand( ) % 400, rand( ) % 450 ) );
-		}
+		vEnemys.push_back( Enemy( rand( ) % SCREEN_WIDTH, rand( ) % SCREEN_HEIGHT ) );
 
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
@@ -79,7 +74,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 
 
-		while ((GetTickCount() - starting_point) < 25);
+		while ((GetTickCount() - starting_point) < 13);
 	}
 
 	// clean up DirectX and COM
@@ -206,9 +201,11 @@ void init_game(void)
 	hero = new Hero( 100.0f, 150.0f );
 
 	for ( int i = 0; i < ENEMY_NUM; i++ )
-		vEnemys.push_back( Enemy( rand( ) % 400, rand( ) % 450 ) );
+	{
+		vEnemys.push_back( Enemy( rand( ) % SCREEN_WIDTH, rand( ) % SCREEN_HEIGHT ) );
+	}
+		
 }
-
 
 void do_game_logic(HWND hWnd)
 {
@@ -220,7 +217,7 @@ void do_game_logic(HWND hWnd)
 
 	if ( KEY_DOWN( VK_LBUTTON ) )
 	{
-		vBullets.push_back( Bullet( *hero, 1000 ) );
+		vBullets.push_back( Bullet( *hero, BULLET_LIFE ) );
 	}
 
 	for ( std::vector<Bullet>::iterator it = vBullets.begin( ); it != vBullets.end( ); it++)
@@ -234,8 +231,10 @@ void do_game_logic(HWND hWnd)
 		{
 			for ( std::vector<Enemy>::iterator eit = vEnemys.begin( ); eit != vEnemys.end( ); )
 			{
-				if ( it->check_collision( *eit ) )
-					eit = vEnemys.erase( eit );
+                if ( it->check_collision( *eit ) )
+                {
+                    eit = vEnemys.erase( eit );
+                }
 				else
 				{
 					it->bLife--;

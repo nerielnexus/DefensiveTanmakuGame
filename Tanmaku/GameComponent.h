@@ -17,6 +17,16 @@ class Entity
 		this->x_pos = x;
 		this->y_pos = y;
 	}
+
+	float getXpos( ) const
+	{
+		return x_pos;
+	}
+
+	float getYpos( ) const
+	{
+		return y_pos;
+	}
 };
 
 
@@ -27,7 +37,6 @@ bool sphere_collision_check( float x0, float y0, float size0, float x1, float y1
 		return true;
 	else
 		return false;
-
 }
 
 
@@ -60,29 +69,33 @@ void Hero::Movement( HWND hWnd )
 // 적 클래스 
 class Enemy :public Entity
 {
+    public:
+    bool isReflected;
+
 	public:
 	void tracemove( const Hero & h );
 
 	public:
 	Enemy( float x, float y ) :Entity( x, y )
 	{
-
+        this->isReflected = false;
+        this->status = true;        // Entity::status -> set bullet live
 	}
 };
 
 void Enemy::tracemove( const Hero & h )
 {
-	float dx = (h.x_pos - this->x_pos) / 20;
-	float dy = (h.y_pos - this->y_pos) / 20;
+    float dx = (h.x_pos - this->x_pos) / 200;
+    float dy = (h.y_pos - this->y_pos) / 200;
 
-	if ( dx <= 10.0f )
-		dx *= 2.0f;
+    if ( dx <= 10.0f )
+        dx *= 2.0f;
 
-	if ( dy <= 10.0f )
-		dy *= 2.0f;
+    if ( dy <= 10.0f )
+        dy *= 2.0f;
 
-	this->x_pos += dx;
-	this->y_pos += dy;
+    this->x_pos += dx;
+    this->y_pos += dy;
 }
 
 
