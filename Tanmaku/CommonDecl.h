@@ -18,7 +18,7 @@
 #define SCREEN_WIDTH    1280
 #define SCREEN_HEIGHT   960
 #define ENEMY_NUM       30
-#define BULLET_LIFE     10000
+#define BULLET_LIFE     10000000
 
 enum { MOVE_UP, MOVE_DOWN, MOVE_LEFT, MOVE_RIGHT };
 

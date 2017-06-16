@@ -51,8 +51,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	{
 		DWORD starting_point = GetTickCount();
 
-
-		vEnemys.push_back( Enemy( rand( ) % SCREEN_WIDTH, rand( ) % SCREEN_HEIGHT ) );
+		for(int i=0; i<3; i++)
+			vEnemys.push_back( Enemy( rand( ) % SCREEN_WIDTH, rand( ) % SCREEN_HEIGHT ) );
 
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
@@ -213,34 +213,32 @@ void do_game_logic(HWND hWnd)
 	hero->Movement(hWnd);
 
 	for ( std::vector<Enemy>::iterator eit = vEnemys.begin( ); eit != vEnemys.end( ); eit++ )
-		eit->tracemove( *hero );
+	{
+		eit->getDisplacement( *hero );
+		eit->tracemvnt( );
+	}
 
 	if ( KEY_DOWN( VK_LBUTTON ) )
 	{
 		vBullets.push_back( Bullet( *hero, BULLET_LIFE ) );
 	}
 
-	for ( std::vector<Bullet>::iterator it = vBullets.begin( ); it != vBullets.end( ); it++)
+	for ( std::vector<Bullet>::iterator it = vBullets.begin( ); it != vBullets.end( ); )
 	{
-		if ( !it->show( ) )
-			continue;
-
 		if ( it->bLife < 0 )
-			it->hide( );
+			it = vBullets.erase( it );
 		else
 		{
 			for ( std::vector<Enemy>::iterator eit = vEnemys.begin( ); eit != vEnemys.end( ); )
 			{
                 if ( it->check_collision( *eit ) )
-                {
-                    eit = vEnemys.erase( eit );
-                }
-				else
-				{
-					it->bLife--;
-					++eit;
-				}
+					eit->isReflected = true;
+
+				it->bLife--;
+				++eit;
 			}
+
+			++it;
 		}
 	}
 
@@ -253,6 +251,16 @@ void do_game_logic(HWND hWnd)
 		else
 			++it_delete;
 
+	}
+
+	std::vector<Enemy>::iterator eit_delete = vEnemys.begin( );
+
+	while ( eit_delete != vEnemys.end( ) )
+	{
+		if ( !eit_delete->boundCheck( ) )
+			eit_delete = vEnemys.erase( eit_delete );
+		else
+			++eit_delete;
 	}
 }
 
@@ -285,11 +293,7 @@ void render_frame(void)
 											 */
 
 											 //ÁÖÀÎ°ø 
-	RECT part;
-	SetRect(&part, 0, 0, 64, 64);
-	D3DXVECTOR3 center(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
-	D3DXVECTOR3 position(hero->x_pos, hero->y_pos, 0.0f);    // position at 50, 50 with no depth
-	d3dspt->Draw(sprite_hero, &part, &center, &position, D3DCOLOR_ARGB(255, 255, 255, 255));
+
 
 
 	for ( std::vector<Bullet>::iterator it = vBullets.begin( ); it != vBullets.end( ); it++ )
@@ -312,6 +316,12 @@ void render_frame(void)
 		D3DXVECTOR3 position2( eit->x_pos, eit->y_pos, 0.0f );    // position at 50, 50 with no depth
 		d3dspt->Draw( sprite_enemy, &part2, &center2, &position2, D3DCOLOR_ARGB( 255, 255, 255, 255 ) );
 	}
+
+	RECT part;
+	SetRect( &part, 0, 0, 64, 64 );
+	D3DXVECTOR3 center( 0.0f, 0.0f, 0.0f );    // center at the upper-left corner
+	D3DXVECTOR3 position( hero->x_pos, hero->y_pos, 0.0f );    // position at 50, 50 with no depth
+	d3dspt->Draw( sprite_hero, &part, &center, &position, D3DCOLOR_ARGB( 255, 255, 255, 255 ) );
 
 
 

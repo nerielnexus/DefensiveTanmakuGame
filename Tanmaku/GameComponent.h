@@ -69,33 +69,68 @@ void Hero::Movement( HWND hWnd )
 // 적 클래스 
 class Enemy :public Entity
 {
+	private:
+	float dx;
+	float dy;
+
     public:
     bool isReflected;
 
 	public:
-	void tracemove( const Hero & h );
+	void getDisplacement( const Hero& h );
+	void tracemvnt( );
+	bool boundCheck( );
 
 	public:
 	Enemy( float x, float y ) :Entity( x, y )
 	{
         this->isReflected = false;
         this->status = true;        // Entity::status -> set bullet live
+		dx = dy = 0.0f;
 	}
 };
 
-void Enemy::tracemove( const Hero & h )
+void Enemy::getDisplacement( const Hero& h )
 {
-    float dx = (h.x_pos - this->x_pos) / 200;
-    float dy = (h.y_pos - this->y_pos) / 200;
+	dx = (h.x_pos - this->x_pos) / 200;
+	dy = (h.y_pos - this->y_pos) / 200;
 
-    if ( dx <= 10.0f )
-        dx *= 2.0f;
+	if ( dx <= 10.0f )
+		dx *= 5.0f;
 
-    if ( dy <= 10.0f )
-        dy *= 2.0f;
+	if ( dy <= 10.0f )
+		dy *= 5.0f;
+}
 
-    this->x_pos += dx;
-    this->y_pos += dy;
+void Enemy::tracemvnt( )
+{
+	if ( !isReflected )
+	{
+		this->x_pos += dx;
+		this->y_pos += dy;
+	}
+	else
+	{
+		this->x_pos += -dx *5;
+		this->y_pos += -dy *5;
+	}
+}
+
+bool Enemy::boundCheck( )
+{
+	if ( this->x_pos < 0 )
+		return false;
+
+	if ( this->x_pos > SCREEN_WIDTH )
+		return false;
+
+	if ( this->y_pos < 0 )
+		return false;
+
+	if ( this->y_pos > SCREEN_HEIGHT )
+		return false;
+
+	return true;
 }
 
 
