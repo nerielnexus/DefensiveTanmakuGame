@@ -7,6 +7,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 std::vector<Enemy> vEnemys;
 std::vector<Bullet> vBullets;
 Hero* hero;
+Spawner* spawn;
 
 
 
@@ -44,15 +45,13 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	init_game();
 
 	// enter the main loop:
-
 	MSG msg;
 
 	while (TRUE)
 	{
 		DWORD starting_point = GetTickCount();
 
-		for(int i=0; i<3; i++)
-			vEnemys.push_back( Enemy( rand( ) % SCREEN_WIDTH, rand( ) % SCREEN_HEIGHT ) );
+		vEnemys.push_back( Enemy( spawn->getXpos( ), spawn->getYpos( ) ) );
 
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
@@ -74,7 +73,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 
 
-		while ((GetTickCount() - starting_point) < 13);
+		while ((GetTickCount() - starting_point) < 16);
 	}
 
 	// clean up DirectX and COM
@@ -126,21 +125,6 @@ void initD3D(HWND hWnd)
 
 	D3DXCreateSprite(d3ddev, &d3dspt);    // create the Direct3D Sprite object
 
-	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
-								 L"Panel3.png",    // the file name
-								 D3DX_DEFAULT,    // default width
-								 D3DX_DEFAULT,    // default height
-								 D3DX_DEFAULT,    // no mip mapping
-								 NULL,    // regular usage
-								 D3DFMT_A8R8G8B8,    // 32-bit pixels with alpha
-								 D3DPOOL_MANAGED,    // typical memory handling
-								 D3DX_DEFAULT,    // no filtering
-								 D3DX_DEFAULT,    // no mip filtering
-								 D3DCOLOR_XRGB(255, 0, 255),    // the hot-pink color key
-								 NULL,    // no image info struct
-								 NULL,    // not using 256 colors
-								 &sprite);    // load to sprite
-
 
 	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
 								 L"hero.png",    // the file name
@@ -158,6 +142,21 @@ void initD3D(HWND hWnd)
 								 &sprite_hero);    // load to sprite
 
 	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
+								 L"hero.png",    // the file name
+								 D3DX_DEFAULT,    // default width
+								 D3DX_DEFAULT,    // default height
+								 D3DX_DEFAULT,    // no mip mapping
+								 NULL,    // regular usage
+								 D3DFMT_A8R8G8B8,    // 32-bit pixels with alpha
+								 D3DPOOL_MANAGED,    // typical memory handling
+								 D3DX_DEFAULT,    // no filtering
+								 D3DX_DEFAULT,    // no mip filtering
+								 D3DCOLOR_XRGB(255, 0, 255),    // the hot-pink color key
+								 NULL,    // no image info struct
+								 NULL,    // not using 256 colors
+								 &sprite_spawner);    // load to sprite
+
+	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
 								 L"enemy.png",    // the file name
 								 D3DX_DEFAULT,    // default width
 								 D3DX_DEFAULT,    // default height
@@ -171,7 +170,6 @@ void initD3D(HWND hWnd)
 								 NULL,    // no image info struct
 								 NULL,    // not using 256 colors
 								 &sprite_enemy);    // load to sprite
-
 
 	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
 								 L"bullet.png",    // the file name
@@ -188,10 +186,6 @@ void initD3D(HWND hWnd)
 								 NULL,    // not using 256 colors
 								 &sprite_bullet);    // load to sprite
 
-
-
-
-
 	return;
 }
 
@@ -200,17 +194,15 @@ void init_game(void)
 {
 	hero = new Hero( 100.0f, 150.0f );
 
-	for ( int i = 0; i < ENEMY_NUM; i++ )
-	{
-		vEnemys.push_back( Enemy( rand( ) % SCREEN_WIDTH, rand( ) % SCREEN_HEIGHT ) );
-	}
-		
+	spawn = new Spawner( 0 );
 }
 
 void do_game_logic(HWND hWnd)
 {
 
 	hero->Movement(hWnd);
+	spawn->move( );
+	spawn->increase_theta( );
 
 	for ( std::vector<Enemy>::iterator eit = vEnemys.begin( ); eit != vEnemys.end( ); eit++ )
 	{
@@ -317,6 +309,13 @@ void render_frame(void)
 		d3dspt->Draw( sprite_enemy, &part2, &center2, &position2, D3DCOLOR_ARGB( 255, 255, 255, 255 ) );
 	}
 
+	RECT spawnerPart;
+	SetRect( &spawnerPart, 0, 0, 64, 64 );
+	D3DXVECTOR3 spawner_center( 0.0f, 0.0f, 0.0f );    // center at the upper-left corner
+	D3DXVECTOR3 spawner_position( spawn->x_pos, spawn->y_pos, 0.0f );    // position at 50, 50 with no depth
+	d3dspt->Draw( sprite_spawner, &spawnerPart, &spawner_center, &spawner_position, D3DCOLOR_ARGB( 255, 255, 255, 255 ) );
+
+
 	RECT part;
 	SetRect( &part, 0, 0, 64, 64 );
 	D3DXVECTOR3 center( 0.0f, 0.0f, 0.0f );    // center at the upper-left corner
@@ -338,7 +337,6 @@ void render_frame(void)
 // this is the function that cleans up Direct3D and COM
 void cleanD3D(void)
 {
-	sprite->Release();
 	d3ddev->Release();
 	d3d->Release();
 
@@ -346,6 +344,7 @@ void cleanD3D(void)
 	sprite_hero->Release();
 	sprite_enemy->Release();
 	sprite_bullet->Release();
+	sprite_spawner->Release( );
 
 	return;
 }

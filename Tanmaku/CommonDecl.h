@@ -1,5 +1,9 @@
 #pragma once
 
+// for M_PI constant
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include <windows.h>
 #include <windowsx.h>
 #include <d3d9.h>
@@ -18,7 +22,7 @@
 #define SCREEN_WIDTH    1280
 #define SCREEN_HEIGHT   960
 #define ENEMY_NUM       30
-#define BULLET_LIFE     10000000
+#define BULLET_LIFE     1000
 
 enum { MOVE_UP, MOVE_DOWN, MOVE_LEFT, MOVE_RIGHT };
 
@@ -30,10 +34,10 @@ LPDIRECT3DDEVICE9 d3ddev;            // the pointer to the device class
 LPD3DXSPRITE d3dspt;                 // the pointer to our Direct3D Sprite interface
 
 // sprite declarations
-LPDIRECT3DTEXTURE9 sprite;           // the pointer to the sprite
 LPDIRECT3DTEXTURE9 sprite_hero;      // the pointer to the sprite
 LPDIRECT3DTEXTURE9 sprite_enemy;     // the pointer to the sprite
 LPDIRECT3DTEXTURE9 sprite_bullet;    // the pointer to the sprite
+LPDIRECT3DTEXTURE9 sprite_spawner;
 
 // function prototypes
 void initD3D( HWND hWnd );           // sets up and initializes Direct3D

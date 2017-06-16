@@ -2,6 +2,24 @@
 
 #include "CommonDecl.h"
 
+struct SPoint
+{
+	float x;
+	float y;
+
+	SPoint( float _x, float _y ) :x( _x ), y( _y )
+	{
+
+	}
+	SPoint( )
+	{
+	}
+};
+
+class Hero;
+class Enemy;
+class Bullet;
+
 //기본 클래스 
 class Entity
 {
@@ -63,7 +81,46 @@ void Hero::Movement( HWND hWnd )
 	this->y_pos = onScreenPos.y - 25;
 }
 
+class Spawner :public Entity
+{
+	private:
+	SPoint center;
+	SPoint currentPos;
+	SPoint radius;
+	int theta;
+	int life;
 
+	public:
+	Spawner( int t ) : theta( t ), Entity( radius.x * cos( M_PI * theta / 360 ), 
+										   radius.y * sin( M_PI * theta / 360 ) )
+	{
+		center = SPoint( SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 );
+		radius = SPoint( SCREEN_WIDTH - 200.0f, SCREEN_HEIGHT - 100.0f );
+		life = 1000;
+	}
+
+	public:
+	void move( );
+	void collision( const Enemy& e );
+	void increase_theta( );
+};
+
+void Spawner::move( )
+{
+	/*
+		Ellipse info.
+		x-side radius : SCREEN_WIDTH - 200.0f;
+		y-side radius : SCREEN_HEOGHT - 200.0f;
+	*/
+
+	x_pos = radius.x / 2 * cos( M_PI * theta / 360 ) + (radius.x / 2) + 50.0f;
+	y_pos = radius.y /2 * sin( M_PI * theta / 360 ) + (radius.y /2) + 50.0f;
+}
+
+void Spawner::increase_theta( )
+{
+	theta += 5;
+}
 
 
 // 적 클래스 
