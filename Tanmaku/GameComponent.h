@@ -153,9 +153,12 @@ class Entity
 };
 
 
-//주인공 클래스 
+// 주인공 클래스 
 class Hero :public Entity
 {
+	private:
+	int power;
+
 	public:
 	Hero( float x, float y ) : Entity( x, y )
 	{
@@ -175,6 +178,43 @@ void Hero::Movement( HWND hWnd )
 	this->y_pos = onScreenPos.y - 25;
 }
 
+// 유저 폭탄 클래스
+class Bomb :public Entity
+{
+	public:
+	float theta;
+	bool isActive;
+	float radius;
+	bool isRadiusIncrease;
+
+	public:
+	Bomb( const Hero& h, float _t ) :Entity(h.x_pos, h.y_pos),theta(_t)
+	{
+		isActive = false;
+		HP = 15;
+		radius = 140.0f;
+		isRadiusIncrease = false;
+	}
+
+	public:
+	bool isActived( )
+	{
+		return isActive;
+	}
+
+	void escortmove( const Hero& h );
+};
+
+void Bomb::escortmove( const Hero& h )
+{
+	x_pos = radius*cos( M_PI * theta / 360 ) + h.x_pos;
+	y_pos = radius*sin( M_PI*theta / 360 ) + h.y_pos;
+
+	theta += 10.0f;
+}
+
+
+// 적 클래스
 class Spawner :public Entity
 {
 	public:
@@ -243,7 +283,7 @@ void EllipseSpawner::move( )
 }
 
 
-// 적 클래스 
+// 적 포탄 클래스 
 class Enemy :public Entity
 {
 	private:

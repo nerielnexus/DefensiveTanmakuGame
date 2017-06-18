@@ -122,6 +122,7 @@ void initD3D(HWND hWnd)
 	CreateTexture( L"Image/enemy.png", &sprite_enemy );
 	CreateTexture( L"Image/bullet.png", &sprite_bullet );
 	CreateTexture( L"Image/spawner.png", &sprite_spawner );
+	CreateTexture( L"Image/bomb.png", &sprite_bomb );
 
 	return;
 }
@@ -153,16 +154,26 @@ void render_frame(void)
 	d3dspt->Draw(sprite, &part, &center, &position, D3DCOLOR_ARGB(127, 255, 255, 255));
 	*/
 
+
+	// player-bullet
 	for ( std::vector<Bullet>::iterator it = vBullets.begin( ); it != vBullets.end( ); it++ )
 		if ( it->show( ) )
 			RenderTexture( sprite_bullet, it->x_pos, it->y_pos, 32 );
 
+	// enemy-bullet
 	for ( std::vector<Enemy>::iterator eit = vEnemys.begin( ); eit != vEnemys.end( ); eit++ )
 		RenderTexture( sprite_enemy, eit->getXpos( ), eit->getYpos( ), 32 );
 
+	//enemy character
 	for ( std::vector<EllipseSpawner>::const_iterator it = vEllipse.begin( ); it != vEllipse.end( ); it++ )
 		RenderTexture( sprite_spawner, it->getXpos( ), it->getYpos( ), 64 );
 
+	// bomb
+	for ( std::vector<Bomb>::iterator it = vBombs.begin( ); it != vBombs.end( ); it++ )
+		if ( it->isActive )
+			RenderTexture( sprite_bomb, it->getXpos( ), it->getYpos( ), 64 );
+
+	// player character
 	RenderTexture( sprite_hero, hero->getXpos( ), hero->getYpos( ), 64 );
 
 	d3dspt->End();    // end sprite drawing
@@ -182,6 +193,8 @@ void cleanD3D(void)
 	sprite_hero->Release();
 	sprite_enemy->Release();
 	sprite_bullet->Release();
+	sprite_spawner->Release( );
+	sprite_bomb->Release( );
 
 	return;
 }

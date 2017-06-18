@@ -41,6 +41,7 @@ LPDIRECT3DTEXTURE9 sprite_hero;      // the pointer to the sprite
 LPDIRECT3DTEXTURE9 sprite_enemy;     // the pointer to the sprite
 LPDIRECT3DTEXTURE9 sprite_bullet;    // the pointer to the sprite
 LPDIRECT3DTEXTURE9 sprite_spawner;
+LPDIRECT3DTEXTURE9 sprite_bomb;
 
 // function prototypes
 void initD3D( HWND hWnd );           // sets up and initializes Direct3D
