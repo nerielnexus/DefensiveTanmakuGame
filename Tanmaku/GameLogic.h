@@ -15,15 +15,40 @@ void do_game_logic(HWND hWnd)
 {
 	if ( counter % 30 == 0 )
 	{
-		vEllipse.push_back( EllipseSpawner( getSpawnPosition( ) ) );
+		vEllipse.push_back( EllipseSpawner( getSpawnPosition( ), getTheta( ) ) );
 	}
 
 	hero->Movement(hWnd);
 
-	for ( std::vector<EllipseSpawner>::iterator it = vEllipse.begin( ); it != vEllipse.end( ); it++ )
+	for ( std::vector<EllipseSpawner>::iterator it = vEllipse.begin( ); it != vEllipse.end( ); )
 	{
-		it->increase_theta( getTheta() );
-		it->move( );
+		for ( std::vector<Enemy>::iterator eit = vEnemys.begin( ); eit != vEnemys.end( ); eit++ )
+		{
+			if ( sphere_collision_check( it->getXpos( ), it->getYpos( ), 32, eit->getXpos( ), eit->getYpos( ), 32 ) )
+			{
+				if( eit->isReflected )
+					it->life--;
+			}
+		}
+
+		if ( !it->checkLife( ) )
+		{
+			it->increase_theta( );
+			it->move( );
+			++it;
+		}
+		else
+		{
+			it = vEllipse.erase( it );
+		}
+	}
+
+	if ( counter % 10 == 0 )
+	{
+		for ( std::vector<EllipseSpawner>::iterator it = vEllipse.begin( ); it != vEllipse.end( ); it++ )
+		{
+			vEnemys.push_back( Enemy( it->getXpos( ), it->getYpos( ) ) );
+		}
 	}
 		
 

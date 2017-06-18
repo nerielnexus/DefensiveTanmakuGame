@@ -3,7 +3,7 @@
 // the WindowProc function prototype
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 void CreateTexture(  LPCTSTR filename, LPDIRECT3DTEXTURE9* texture );
-void RenderTexture( LPDIRECT3DTEXTURE9 texture, float xpos, float ypos );
+void RenderTexture( LPDIRECT3DTEXTURE9 texture, float xpos, float ypos, int size );
 
 // the entry point for any Windows program
 int WINAPI WinMain(HINSTANCE hInstance,
@@ -49,8 +49,6 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	{
 		DWORD starting_point = GetTickCount();
 
-		//vEllipse.push_back( EllipseSpawner( getSpawnPosition( ) ) );
-
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			if (msg.message == WM_QUIT)
@@ -68,11 +66,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		if (KEY_DOWN(VK_ESCAPE))
 			PostMessage(hWnd, WM_DESTROY, 0, 0);
 
-
-
-
 		while ( (GetTickCount( ) - starting_point) < 16 );
-			
+		
 		counter++;
 	}
 
@@ -123,10 +118,10 @@ void initD3D(HWND hWnd)
 
 	D3DXCreateSprite(d3ddev, &d3dspt);    // create the Direct3D Sprite object
 
-	CreateTexture( L"hero.png", &sprite_hero );
-	CreateTexture( L"enemy.png", &sprite_enemy );
-	CreateTexture( L"bullet.png", &sprite_bullet );
-	CreateTexture( L"hero.png", &sprite_spawner );
+	CreateTexture( L"Image/player.png", &sprite_hero );
+	CreateTexture( L"Image/enemy.png", &sprite_enemy );
+	CreateTexture( L"Image/bullet.png", &sprite_bullet );
+	CreateTexture( L"Image/spawner.png", &sprite_spawner );
 
 	return;
 }
@@ -160,15 +155,15 @@ void render_frame(void)
 
 	for ( std::vector<Bullet>::iterator it = vBullets.begin( ); it != vBullets.end( ); it++ )
 		if ( it->show( ) )
-			RenderTexture( sprite_bullet, it->x_pos, it->y_pos );
+			RenderTexture( sprite_bullet, it->x_pos, it->y_pos, 32 );
 
 	for ( std::vector<Enemy>::iterator eit = vEnemys.begin( ); eit != vEnemys.end( ); eit++ )
-		RenderTexture( sprite_enemy, eit->getXpos( ), eit->getYpos( ) );
+		RenderTexture( sprite_enemy, eit->getXpos( ), eit->getYpos( ), 32 );
 
 	for ( std::vector<EllipseSpawner>::const_iterator it = vEllipse.begin( ); it != vEllipse.end( ); it++ )
-		RenderTexture( sprite_spawner, it->getXpos( ), it->getYpos( ) );
+		RenderTexture( sprite_spawner, it->getXpos( ), it->getYpos( ), 64 );
 
-	RenderTexture( sprite_hero, hero->getXpos( ), hero->getYpos( ) );
+	RenderTexture( sprite_hero, hero->getXpos( ), hero->getYpos( ), 64 );
 
 	d3dspt->End();    // end sprite drawing
 	d3ddev->EndScene();    // ends the 3D scene
@@ -209,10 +204,10 @@ void CreateTexture( LPCTSTR filename, LPDIRECT3DTEXTURE9* texture )
 								 texture);    // load to sprite
 }
 
-void RenderTexture( LPDIRECT3DTEXTURE9 texture, float xpos, float ypos )
+void RenderTexture( LPDIRECT3DTEXTURE9 texture, float xpos, float ypos, int size )
 {
 	RECT part;
-	SetRect( &part, 0, 0, 64, 64 );
+	SetRect( &part, 0, 0, size, size );
 	D3DXVECTOR3 center( 0.0f, 0.0f, 0.0f );    // center at the upper-left corner
 	D3DXVECTOR3 position(xpos, ypos, 0.0f );    // position at 50, 50 with no depth
 	d3dspt->Draw( texture, &part, &center, &position, D3DCOLOR_ARGB( 255, 255, 255, 255 ) );

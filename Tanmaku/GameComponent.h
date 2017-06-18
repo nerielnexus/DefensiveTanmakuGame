@@ -115,7 +115,7 @@ SPoint getSpawnPosition( )
 float getTheta( )
 {
 	std::tr1::mt19937 rand_engine( ( unsigned int ) time( NULL ) );
-	std::tr1::uniform_real<float> createTheta( -10.0f, 10.0f );
+	std::tr1::uniform_real<float> createTheta( -5.0f, 5.0f );
 
 	return std::bind( createTheta, rand_engine )();
 }
@@ -177,15 +177,15 @@ void Hero::Movement( HWND hWnd )
 
 class Spawner :public Entity
 {
-	protected:
+	public:
 	float theta;
 	int life;
 
 	public:
-	Spawner( SPoint pos )
-		:Entity(pos.x,pos.y)
+	Spawner( SPoint pos, float _theta )
+		:Entity(pos.x,pos.y), theta( _theta )
 	{
-
+		life = 10;
 	}
 
 	protected:
@@ -193,9 +193,20 @@ class Spawner :public Entity
 	virtual void setposition( ) = 0;
 
 	public:
-	void increase_theta( float _t )
+	void increase_theta( )
 	{
-		theta += _t;
+		if ( theta >= 0 )
+			theta += 3.0f;
+		else
+			theta -= 3.0f;
+	}
+
+	bool checkLife( )
+	{
+		if ( life <= 0 )
+			return true;
+
+		return false;
 	}
 };
 
@@ -205,7 +216,7 @@ class EllipseSpawner :public Spawner
 	SPoint radius;
 
 	public:
-	EllipseSpawner( SPoint pos ) :Spawner(pos)
+	EllipseSpawner( SPoint pos, float _theta ) :Spawner(pos, _theta)
 	{
 		setposition( );
 	}
