@@ -1,5 +1,4 @@
 #pragma once
-
 #include "CommonDecl.h"
 
 struct SPoint
@@ -15,6 +14,112 @@ struct SPoint
 	{
 	}
 };
+
+bool sphere_collision_check( float x0, float y0, float size0, float x1, float y1, float size1 )
+{
+
+	if ( (x0 - x1)*(x0 - x1) + (y0 - y1)*(y0 - y1) < (size0 + size1) * (size0 + size1) )
+		return true;
+	else
+		return false;
+}
+
+float getDistance( float x0, float y0, float x1, float y1 )
+{
+	return sqrt( pow( x0 - x1, 2 ) + pow( y0 - y1, 2 ) );
+}
+
+SPoint getLeftPosition( )
+{
+	std::tr1::mt19937 rand_engine( ( unsigned int ) time( NULL ) );
+	std::tr1::uniform_int<int> spawn_area_x_left( 50, 425 );
+	std::tr1::uniform_int<int> spawn_area_y_all( 0, SCREEN_HEIGHT );
+
+	SPoint temp;
+	temp.x = std::bind( spawn_area_x_left, rand_engine )();
+	temp.y = std::bind( spawn_area_y_all, rand_engine )();
+
+	return temp;
+}
+
+SPoint getRightPosition( )
+{
+	std::tr1::mt19937 rand_engine( ( unsigned int ) time( NULL ) );
+	std::tr1::uniform_int<int> spawn_area_x_right( 835, 1230 );
+	std::tr1::uniform_int<int> spawn_area_y_all( 0, SCREEN_HEIGHT );
+
+	SPoint temp;
+	temp.x = std::bind( spawn_area_x_right, rand_engine )();
+	temp.y = std::bind( spawn_area_y_all, rand_engine )();
+
+	return temp;
+}
+
+SPoint getUpPosition( )
+{
+	std::tr1::mt19937 rand_engine( ( unsigned int ) time( NULL ) );
+	std::tr1::uniform_int<int> spawn_area_y_up( 50, 320 );
+	std::tr1::uniform_int<int> spawn_area_x_all( 0, SCREEN_WIDTH );
+
+	SPoint temp;
+	temp.x = std::bind( spawn_area_x_all, rand_engine )();
+	temp.y = std::bind( spawn_area_y_up, rand_engine )();
+
+	return temp;
+}
+
+SPoint getDownPosition( )
+{
+	std::tr1::mt19937 rand_engine( ( unsigned int ) time( NULL ) );
+	std::tr1::uniform_int<int> spawn_area_y_down( 640, 910 );
+	std::tr1::uniform_int<int> spawn_area_x_all( 0, SCREEN_WIDTH );
+
+	SPoint temp;
+	temp.x = std::bind( spawn_area_x_all, rand_engine )();
+	temp.y = std::bind( spawn_area_y_down, rand_engine )();
+
+	return temp;
+}
+
+SPoint getSpawnPosition( )
+{
+	std::tr1::mt19937 rand_engine( ( unsigned int ) time( NULL ) );
+	std::tr1::uniform_int<int> select_area( 1, 4 );
+
+	int area = std::bind( select_area, rand_engine )();
+
+	SPoint result;
+
+	switch ( area )
+	{
+		case 1:
+			result = getLeftPosition( );
+			break;
+
+		case 2:
+			result = getRightPosition( );
+			break;
+
+		case 3:
+			result = getUpPosition( );
+			break;
+
+		case 4:
+			result = getDownPosition( );
+			break;
+	}
+
+	return result;
+}
+
+float getTheta( )
+{
+	std::tr1::mt19937 rand_engine( ( unsigned int ) time( NULL ) );
+	std::tr1::uniform_real<float> createTheta( -10.0f, 10.0f );
+
+	return std::bind( createTheta, rand_engine )();
+}
+
 
 class Hero;
 class Enemy;
@@ -48,17 +153,6 @@ class Entity
 };
 
 
-bool sphere_collision_check( float x0, float y0, float size0, float x1, float y1, float size1 )
-{
-
-	if ( (x0 - x1)*(x0 - x1) + (y0 - y1)*(y0 - y1) < (size0 + size1) * (size0 + size1) )
-		return true;
-	else
-		return false;
-}
-
-
-
 //주인공 클래스 
 class Hero :public Entity
 {
@@ -83,43 +177,58 @@ void Hero::Movement( HWND hWnd )
 
 class Spawner :public Entity
 {
-	private:
-	SPoint center;
-	SPoint currentPos;
-	SPoint radius;
-	int theta;
+	protected:
+	float theta;
 	int life;
 
 	public:
-	Spawner( int t ) : theta( t ), Entity( radius.x * cos( M_PI * theta / 360 ), 
-										   radius.y * sin( M_PI * theta / 360 ) )
+	Spawner( SPoint pos )
+		:Entity(pos.x,pos.y)
 	{
-		center = SPoint( SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 );
-		radius = SPoint( SCREEN_WIDTH - 200.0f, SCREEN_HEIGHT - 100.0f );
-		life = 1000;
+
+	}
+
+	protected:
+	virtual void move( ) = 0;
+	virtual void setposition( ) = 0;
+
+	public:
+	void increase_theta( float _t )
+	{
+		theta += _t;
+	}
+};
+
+class EllipseSpawner :public Spawner
+{
+	private:
+	SPoint radius;
+
+	public:
+	EllipseSpawner( SPoint pos ) :Spawner(pos)
+	{
+		setposition( );
 	}
 
 	public:
-	void move( );
-	void collision( const Enemy& e );
-	void increase_theta( );
+	virtual void setposition( );
+	virtual void move( );
 };
 
-void Spawner::move( )
+void EllipseSpawner::setposition( )
 {
-	/*
-		Ellipse info.
-		x-side radius : SCREEN_WIDTH - 200.0f;
-		y-side radius : SCREEN_HEOGHT - 200.0f;
-	*/
+	float dist = getDistance( this->x_pos, this->y_pos, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 );
 
-	x_pos = radius.x / 2 * cos( M_PI * theta / 360 ) + (radius.x / 2) + 50.0f;
-	y_pos = radius.y /2 * sin( M_PI * theta / 360 ) + (radius.y /2) + 50.0f;
+	radius.x = dist*static_cast<float>(SCREEN_WIDTH / SCREEN_HEIGHT);
+	radius.y = dist*static_cast<float>(SCREEN_HEIGHT / SCREEN_WIDTH);
+
+	theta = atan2( this->x_pos - SCREEN_WIDTH / 2, this->y_pos - SCREEN_HEIGHT / 2 ) * 360 / M_PI;
 }
 
-void Spawner::increase_theta( )
+void EllipseSpawner::move( )
 {
-	theta += 5;
+	x_pos = radius.x * cos( M_PI * theta / 360 ) + SCREEN_WIDTH / 2;
+	y_pos = radius.y * sin( M_PI * theta / 360 ) + SCREEN_HEIGHT / 2;
 }
 
 
@@ -191,6 +300,7 @@ bool Enemy::boundCheck( )
 }
 
 
+// 유저 방어벽
 class Bullet :public Entity
 {
 	public:
@@ -199,7 +309,6 @@ class Bullet :public Entity
 
 	public:
 	bool show( );
-	void hide( );
 	void active( );
 	bool check_collision( const Enemy& e );
 
@@ -211,7 +320,6 @@ class Bullet :public Entity
 	}
 };
 
-
 bool Bullet::check_collision( const Enemy& e )
 {
 	if ( sphere_collision_check( x_pos, y_pos, 32, e.x_pos, e.y_pos, 32 ) == true )
@@ -220,23 +328,14 @@ bool Bullet::check_collision( const Enemy& e )
 		return false;
 }
 
-
-
 bool Bullet::show( )
 {
 	return bShow;
 
 }
 
-
 void Bullet::active( )
 {
 	bShow = true;
-
-}
-
-void Bullet::hide( )
-{
-	bShow = false;
 
 }

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 // for M_PI constant
 #define _USE_MATH_DEFINES
@@ -12,6 +12,7 @@
 #include <vector>
 #include <ctime>
 #include <random>
+#include <functional>
 
 #pragma comment (lib, "d3d9.lib")
 #pragma comment (lib, "d3dx9.lib")
@@ -19,8 +20,8 @@
 #define KEY_DOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
 #define KEY_UP(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 0 : 1)
 
-#define SCREEN_WIDTH    1280
-#define SCREEN_HEIGHT   960
+#define SCREEN_WIDTH    1280.0f
+#define SCREEN_HEIGHT   960.0f
 #define ENEMY_NUM       30
 #define BULLET_LIFE     1000
 
@@ -32,6 +33,8 @@ POINT onScreenPos;
 LPDIRECT3D9 d3d;                     // the pointer to our Direct3D interface
 LPDIRECT3DDEVICE9 d3ddev;            // the pointer to the device class
 LPD3DXSPRITE d3dspt;                 // the pointer to our Direct3D Sprite interface
+
+static int counter = 0;
 
 // sprite declarations
 LPDIRECT3DTEXTURE9 sprite_hero;      // the pointer to the sprite
